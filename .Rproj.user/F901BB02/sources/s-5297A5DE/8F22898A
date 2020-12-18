@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1607929351484.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "8F22898A",
+    "lastKnownWriteTime" : 1608001051,
+    "last_content_update" : 1608001051929,
+    "path" : "~/Lab_Analysis/scRNAseq/CreateStatBatplot.R",
+    "project_path" : "CreateStatBatplot.R",
+    "properties" : {
+        "cursorPosition" : "12,34",
+        "scrollLine" : "0",
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

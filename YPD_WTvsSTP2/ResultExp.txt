@@ -1,0 +1,5 @@
+WTvsSTP2_DifferenceProb.png
+横軸: STP2のターゲットとなっている遺伝子(Yeastract)
+上段: WTとSTP2 を比較し相対的生物学的ノイズ(Residual Over-dispersion)に変化のあったとされる確率を濃い色で示したもの
+下段: 平均値に変化のあったとされる確率を濃い色で示したもの
+

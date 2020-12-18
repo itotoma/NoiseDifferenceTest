@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1607316588802.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "5391FCDE",
+    "lastKnownWriteTime" : 1607321258,
+    "last_content_update" : 1607321258694,
+    "path" : "~/Lab_Analysis/scRNAseq/TurorialBASiCS.R",
+    "project_path" : "TurorialBASiCS.R",
+    "properties" : {
+        "cursorPosition" : "50,0",
+        "scrollLine" : "38",
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 8,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

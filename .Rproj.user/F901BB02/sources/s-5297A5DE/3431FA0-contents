@@ -1,0 +1,84 @@
+#Nwtwork analysis
+
+library(igraph)
+library(tidygraph)
+
+A <- matrix(c(
+  0,1,1,1,0,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0, 
+  1,0,0,0,0,0,0,1,0,0,1,0,1,0,0,0,0,1,0,0, 
+  1,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0, 
+  1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0, 
+  0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,1,1,0,0,0, 
+  1,0,0,0,1,0,1,0,0,0,1,0,0,0,1,0,1,0,0,0, 
+  0,0,0,0,1,1,0,0,0,0,0,0,0,0,1,1,0,0,0,0, 
+  0,1,0,0,0,0,0,0,1,1,0,1,0,0,0,0,0,0,1,1, 
+  0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,1,0,1, 
+  0,0,0,0,0,0,0,1,1,0,0,0,0,1,0,0,0,0,0,0,
+  0,1,1,1,0,1,0,0,0,0,0,1,0,0,0,1,0,0,0,0, 
+  1,0,1,0,0,0,0,1,0,0,1,0,1,1,0,0,0,1,0,0, 
+  1,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0, 
+  0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,1,0,0,0,0, 
+  0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,1,0,0,0, 
+  0,0,0,0,1,0,1,0,0,0,1,0,0,1,0,0,1,0,0,0, 
+  0,0,0,0,1,1,0,0,0,0,0,0,0,0,1,1,0,0,0,0, 
+  0,1,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,1,1, 
+  0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,1, 
+  0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,1,1,0),
+  nrow = 20, ncol = 20, byrow = TRUE)
+
+colnames(A) <- c(1:20)
+rownames(A) <- c(1:20)
+g1 <- graph_from_adjacency_matrix(A)
+g1_tbl <- as_tbl_graph(g1, direted = F)
+
+library(ggraph)
+
+#Desctibe given network
+g1_tbl %>%  
+  ggraph(layout = "kk") +
+  geom_edge_link(alpha=0.8, colour = "lightgray") + 
+  scale_edge_width(range = c(0.1,1)) +
+  geom_node_point(aes( size = 4))
+ 
+#Network analysis
+plot_tbl_data <- function(tbl_data, title = "centrality"){
+  tbl_data %>%  
+    ggraph(layout = "kk") +
+    geom_edge_link(alpha=0.8, colour = "lightgray") + 
+    scale_edge_width(range = c(0.1,1)) +
+    geom_node_point(aes( size = centrality)) +
+    geom_node_label(aes(label = name),repel = TRUE)+
+    ggtitle(title)
+}
+
+
+#Degree Centrarity:  Metrics of edge number
+g1_tbl.deg <- g1_tbl %>% 
+  mutate(centrality = centrality_degree())
+
+plot_tbl_data(g1_tbl.deg, "centrality:degree")
+
+
+library(netrankr)
+#Information centrarity: 
+g1_tbl.inf <- g1_tbl %>% 
+  mutate(centrality = centrality_information())
+
+plot_tbl_data(g1_tbl.inf, "centrality:infomation")
+
+
+#クラスタリング
+plot_tbl_data <- function(tbl_data, title){
+  tbl_data %>%
+    ggraph(layout = "kk") +
+    geom_edge_link(alpha=0.8, colour = "lightgray") + 
+    scale_edge_width(range = c(0.1,1)) +
+    geom_node_point(aes(colour = nclass, size = 4)) +
+    geom_node_label(aes(label = name), repel = FALSE) +
+    ggtitle(title)
+}
+
+#媒介中心性によるクラスタリング
+g1_tbl.bet_C <- g1_tbl %>% 
+  mutate(nclass = as.factor(group_edge_betweenness()))
+plot_tbl_data(g1_tbl.bet_C,"betweenness")
