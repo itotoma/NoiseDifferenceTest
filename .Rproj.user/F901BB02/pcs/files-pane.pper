@@ -1,9 +1,0 @@
-{
-    "path" : "~/Lab_Analysis/scRNAseq",
-    "sortOrder" : [
-        {
-            "ascending" : true,
-            "columnIndex" : 2
-        }
-    ]
-}
