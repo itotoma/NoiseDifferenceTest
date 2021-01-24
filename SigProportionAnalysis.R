@@ -1,59 +1,83 @@
 if(!exists('Mean.Noise.Bind.df')){cat("Execute CreateHeatmap_segment_CS5.R first!")}
 
+interest.TF.Target = Yeastract.interact %>% dplyr::filter(V1 == "RTG1")
+  
 DiffValueMean = Mean.Noise.Bind.df %>%  na.omit() %>% 
-  mutate(STP2Target = ifelse(is.element(Gene, STP2BindGenes$V2), TRUE, FALSE)) %>% 
+  mutate(TFTarget = ifelse(is.element(Gene, interest.TF.Target$V2), TRUE, FALSE)) %>% 
   mutate(starnum = ifelse(star == "*", 1, 0)) %>% 
-  dplyr::group_by(STP2Target, Group, comp) %>% dplyr::summarise(starnum = sum(starnum), num = length(Gene)) 
+  dplyr::group_by(TFTarget, Group, comp) %>% dplyr::summarise(starnum = sum(starnum), num = length(Gene)) 
 
-#Test
-for(cons in c("All", "C1", "C2", "C3", "C4", "C5")){
-  print(cons)
-  tmpdf <- DiffValueMean %>% filter(comp=="Noise") %>% filter(Group == cons)
-  TG = tmpdf %>% filter(STP2Target)
-  NoTG = tmpdf %>% filter(!STP2Target)
-  fisher.test(matrix(c(TG$starnum, NoTG$starnum, (TG$num-TG$starnum), (NoTG$num-NoTG$starnum)),nrow=2)) %>% 
-    print()
+Create.pval.bar <- function(df, ylist, margin, plist, ymax, title){
+  non.signif.index <- c(1:6)[plist > 0.05]
+  plist[plist < 0.005] = "p < 0.005"
+  plist[plist < 0.01] = "p < 0.01"
+  plist[plist < 0.05] = "p < 0.05"
+  xcor = c(1:6)
+  xcor[non.signif.index] = -10
+  g1 <- ggplot(df, aes(x = Group, y = prop, fill = TFTarget)) + 
+    ylab("Proportion of significance") + 
+    geom_bar(stat = "identity", position = "dodge") + 
+    ylim(0,ymax) + theme_classic(base_size = 10, base_family = "Helvetica") +
+    scale_fill_manual(values=c("gray10","grey70")) + 
+    geom_text(x = xcor[1],  y = ylist[1]+margin,  label = plist[1], colour = "black") +
+    geom_text(x = xcor[2],  y = ylist[2]+margin,  label = plist[2], colour = "black") +
+    geom_text(x = xcor[3],  y = ylist[3]+margin,  label = plist[3], colour = "black") +
+    geom_text(x = xcor[4],  y = ylist[4]+margin,  label = plist[4], colour = "black") +
+    geom_text(x = xcor[5],  y = ylist[5]+margin,  label = plist[5], colour = "black") +
+    geom_text(x = xcor[6],  y = ylist[6]+margin,  label = plist[6], colour = "black") +
+    geom_segment(x=xcor[1]-0.3, xend=xcor[1]+0.3, y=ylist[1], yend=ylist[1]) + 
+    geom_segment(x=xcor[2]-0.3, xend=xcor[2]+0.3, y=ylist[2], yend=ylist[2]) + 
+    geom_segment(x=xcor[3]-0.3, xend=xcor[3]+0.3, y=ylist[3], yend=ylist[3]) + 
+    geom_segment(x=xcor[4]-0.3, xend=xcor[4]+0.3, y=ylist[4], yend=ylist[4]) + 
+    geom_segment(x=xcor[5]-0.3, xend=xcor[5]+0.3, y=ylist[5], yend=ylist[5]) + 
+    geom_segment(x=xcor[6]-0.3, xend=xcor[6]+0.3, y=ylist[6], yend=ylist[6]) +
+    xlab("") + ggtitle(title)
+  return(g1)
 }
+
+
+compair = "Noise"
+fisher.res.list = sapply(c("All", "C1", "C2", "C3", "C4", "C5"), 
+                         function(ci){
+                           tmpdf <- DiffValueMean %>% 
+                             dplyr::filter(comp==compair) %>% 
+                             dplyr::filter(Group == ci)
+                           TG = tmpdf %>% dplyr::filter(TFTarget)
+                           NoTG = tmpdf %>% dplyr::filter(!TFTarget)
+                           fisher.res <- fisher.test(matrix(c(TG$starnum, NoTG$starnum, (TG$num-TG$starnum), (NoTG$num-NoTG$starnum)),nrow=2))
+                           print(fisher.res)
+                           return(fisher.res$p.value)
+                         })
 #＊　p<0.05、＊＊　P<0.01、　＊＊＊P<0.005
-DiffValueMean$Group <- factor(DiffValueMean$Group, levels = c("All", "C1", "C2", "C3", "C4", "C5"))
-g1 <- ggplot(filter(DiffValueMean, comp=="Mean"), aes(x = Group, y = starnum/num, fill = STP2Target)) + 
-  ylab("Proportion of significance") + 
-  geom_bar(stat = "identity", position = "dodge") + 
-  ylim(0,0.21) + theme_classic(base_size = 10, base_family = "Helvetica") +
-  scale_fill_manual(values=c("gray10","grey70")) + 
-  geom_text(x = 5,  y = 0.14,  label = "*", colour = "black") +
-  geom_segment(x=4.7, xend=5.3, y=0.13, yend=0.13) + 
-  xlab("") + ggtitle("Mean")
-g1
-#ggsave("MeanPropSig.png", g1, width=5.6, height=4.0)
-
-g2 <- ggplot(filter(DiffValueMean, comp=="Noise"), aes(x = Group, y = starnum/num, fill = STP2Target)) + 
-  ylab("Proportion of significance") + 
-  geom_bar(stat = "identity", position = "dodge") + 
-  theme_classic(base_size = 10, base_family = "Helvetica") +
-  ylim(0,0.21)+
-  scale_fill_manual(values=c("gray10","grey70")) + 
-  ##All label
-  geom_text(x = 1,  y = 0.06,  label = "***", colour = "black") +
-  geom_segment(x=0.7, xend=1.3, y=0.05, yend=0.05) + 
-  #C1 label
-  geom_text(x = 2,  y = 0.03,  label = "*", colour = "black") +
-  geom_segment(x=1.7, xend=2.3, y=0.02, yend=0.02) + 
-  #C2 label
-  geom_text(x = 3,  y = 0.04,  label = "***", colour = "black") +
-  geom_segment(x=2.7, xend=3.3, y=0.03, yend=0.03) + 
-  #C3 is not significant
-  #C4 label
-  geom_text(x = 5,  y = 0.07,  label = "***", colour = "black") +
-  geom_segment(x=4.7, xend=5.3, y=0.06, yend=0.06) + 
-  #C5 label
-  geom_text(x = 6,  y = 0.04,  label = "***", colour = "black") +
-  geom_segment(x=5.7, xend=6.3, y=0.03, yend=0.03) + 
-  xlab("") + ggtitle("Noise")
-g2
-#ggsave("NoisePropSig.png", g2, width=5.6, height=4.0)
+test.df <- DiffValueMean %>% dplyr::filter(comp==compair) %>% mutate(prop = starnum/num)
+test.df$Group = factor(test.df$Group, levels = c("All", "C1", "C2", "C3", "C4", "C5"))
+ylist = test.df %>% dplyr::group_by(Group) %>% summarise(max = max(prop))
+g1 <- Create.pval.bar(test.df, ylist = ylist$max+0.01, 
+                margin=0.01, fisher.res.list, ymax = 0.25, title=compair)
+print(g1)
+#ggsave("NoisePropSig.png", g1, width=5.6, height=4.0)
 
 
+compair = "Mean"
+fisher.res.list = sapply(c("All", "C1", "C2", "C3", "C4", "C5"), 
+                         function(ci){
+                           tmpdf <- DiffValueMean %>% 
+                             dplyr::filter(comp==compair) %>% 
+                             dplyr::filter(Group == ci)
+                           TG = tmpdf %>% dplyr::filter(TFTarget)
+                           NoTG = tmpdf %>% dplyr::filter(!TFTarget)
+                           fisher.res <- fisher.test(matrix(c(TG$starnum, NoTG$starnum, (TG$num-TG$starnum), (NoTG$num-NoTG$starnum)),nrow=2))
+                           print(fisher.res)
+                           return(fisher.res$p.value)
+                         })
+#＊　p<0.05、＊＊　P<0.01、　＊＊＊P<0.005
+test.df <- DiffValueMean %>% dplyr::filter(comp==compair) %>% mutate(prop = starnum/num)
+test.df$Group = factor(test.df$Group, levels = c("All", "C1", "C2", "C3", "C4", "C5"))
+ylist = test.df %>% dplyr::group_by(Group) %>% summarise(max = max(prop))
+g1 <- Create.pval.bar(test.df, ylist = ylist$max+0.01, 
+                margin=0.01, fisher.res.list, ymax = 0.25, title=compair)
+print(g1)
+ggsave("MeanPropSig.png", g1, width=5.6, height=4.0)
 
 
 #Analyze accordance of results among clusters
